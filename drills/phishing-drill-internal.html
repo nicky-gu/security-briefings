@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钓鱼演练落地方案（IT内部版）· poppula IT安全</title>
+<style>
+  :root {
+    --brand: #d3fb12;
+    --dark: #0f0f0e;
+    --gray-bg: #f3f5f4;
+    --gray-border: #bebebe;
+    --text: #2a2a28;
+    --text-light: #6b6b68;
+    --red: #d92b2b;
+    --green: #0a8f3c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--gray-bg); color: var(--text); line-height: 1.8; }
+  .hero { background: var(--dark); padding: 64px 24px 48px; text-align: center; }
+  .hero .tag { display: inline-block; border: 1px solid var(--brand); color: var(--brand); font-size: 13px; letter-spacing: 4px; padding: 6px 18px; margin-bottom: 24px; }
+  .hero h1 { color: #fff; font-size: 32px; font-weight: 700; }
+  .hero h1 em { color: var(--brand); font-style: normal; }
+  .hero p.sub { color: #9a9a96; margin-top: 14px; font-size: 15px; }
+  .topnav { position: sticky; top: 0; z-index: 100; background: var(--dark); border-bottom: 2px solid var(--brand); overflow-x: auto; white-space: nowrap; padding: 0 12px; }
+  .topnav a { display: inline-block; color: #b8b8b4; text-decoration: none; font-size: 13px; padding: 11px 14px; }
+  .topnav a:hover { color: var(--brand); }
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+  .card { background: #fff; border: 1px solid var(--gray-border); border-radius: 6px; padding: 30px 32px; margin-bottom: 30px; }
+  .card h2 { font-size: 22px; margin-bottom: 18px; padding-left: 14px; border-left: 5px solid var(--brand); line-height: 1.4; }
+  .card h3 { font-size: 16.5px; margin: 24px 0 10px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+  th { background: var(--dark); color: var(--brand); padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e5e5e2; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .callout { background: var(--dark); color: #e8e8e4; padding: 20px 24px; border-radius: 6px; margin: 18px 0; border-left: 5px solid var(--brand); }
+  .callout b, .callout strong { color: var(--brand); }
+  .callout.warn { border-left-color: var(--red); }
+  .hl { background: linear-gradient(transparent 62%, rgba(211,251,18,.55) 62%); font-weight: 600; }
+  pre { background: var(--dark); color: #d8e8a0; padding: 16px 18px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 12px 0; }
+  code { font-family: Consolas, "Courier New", monospace; }
+  p code, td code, li code { background: rgba(211,251,18,.15); color: #4a5a02; padding: 1px 6px; border-radius: 3px; font-size: 12.5px; }
+  ul.plain { padding-left: 20px; }
+  ul.plain li { margin: 8px 0; }
+  .timeline { border-left: 3px solid var(--brand); margin: 16px 0 16px 8px; padding-left: 22px; }
+  .timeline .t-item { margin: 14px 0; position: relative; }
+  .timeline .t-item::before { content: ''; position: absolute; left: -29px; top: 8px; width: 11px; height: 11px; border-radius: 50%; background: var(--dark); border: 2px solid var(--brand); }
+  .timeline .t-item b.t { color: #4a5a02; }
+  .check { color: var(--green); font-weight: 700; }
+  .chip { display: inline-block; background: rgba(211,251,18,.18); border: 1px solid var(--brand); color: #4a5a02; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin: 2px 4px 2px 0; white-space: nowrap; }
+  .src-list { font-size: 12.5px; color: var(--text-light); background: #f7f7f5; border-top: 1px dashed var(--gray-border); padding: 14px 16px; margin-top: 18px; border-radius: 0 0 6px 6px; }
+  .src-list a { color: #4a5a02; }
+  footer { text-align: center; color: var(--text-light); font-size: 12px; padding: 30px 20px 50px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="tag">POPpULA · IT SECURITY · 内部技术方案</div>
+  <h1>钓鱼演练<em>落地方案</em></h1>
+  <p class="sub">工具选型 · 模板设计 · 执行手册 · 度量体系 · 邮件网关联动 · Splunk 集成<br>
+  IT 部门执行版（与管理层汇报版配套）</p>
+</div>
+
+<nav class="topnav">
+  <a href="#t1">① 方案总览</a>
+  <a href="#t2">② 工具选型</a>
+  <a href="#t3">③ 邮件模板库</a>
+  <a href="#t4">④ 执行手册</a>
+  <a href="#t5">⑤ 度量与上报</a>
+  <a href="#t6">⑥ 网关联动</a>
+  <a href="#t7">⑦ Splunk 集成</a>
+  <a href="#t8">⑧ 风险控制</a>
+</nav>
+
+<div class="container">
+
+<!-- ============ T1 ============ -->
+<div class="card" id="t1">
+  <h2>一、方案总览</h2>
+  <table>
+    <tr><th style="width:140px;">项</th><th>内容</th></tr>
+    <tr><td><b>目标</b></td><td>建立可持续的钓鱼演练能力：季度一轮、全员工覆盖、点击率年目标 30%→10% 以下、上报率 &gt;50%</td></tr>
+    <tr><td><b>范围</b></td><td>全员邮箱（首轮）；后续轮次加码高风险部门（财务/采购/HR/高管）</td></tr>
+    <tr><td><b>技术栈</b></td><td>演练平台（Gophish）+ 域名/发信基础设施 + 教育落地页 + Splunk 记账 + 企微通知</td></tr>
+    <tr><td><b>红线</b></td><td>不收集真实密码（落地页只记录"提交"动作）；不与绩效挂钩；数据仅安全团队可见</td></tr>
+  </table>
+
+  <div class="timeline">
+    <div class="t-item"><b class="t">第 1-2 周</b>：基础设施搭建（工具选型落地、域名与发信配置）</div>
+    <div class="t-item"><b class="t">第 3 周</b>：模板制作与内部试测（先打 IT 自己）</div>
+    <div class="t-item"><b class="t">第 4 周</b>：首轮全员演练 + 即时教育</div>
+    <div class="t-item"><b class="t">第 5 周</b>：数据复盘、网关规则同步、报告输出</div>
+    <div class="t-item"><b class="t">每季度</b>：循环一轮，难度递增（详见 ④）</div>
+  </div>
+</div>
+
+<!-- ============ T2 ============ -->
+<div class="card" id="t2">
+  <h2>二、工具选型</h2>
+  <table>
+    <tr><th>方案</th><th>成本</th><th>优点</th><th>缺点</th><th>结论</th></tr>
+    <tr>
+      <td><b>Gophish</b>（开源）</td>
+      <td>0（自建）</td>
+      <td>开源事实标准；模板/活动/统计全功能；数据完全自持（不出公司）；Docker 一键部署</td>
+      <td>需要自备发信域名和 SMTP；报表需二次加工</td>
+      <td><span class="chip">推荐首选</span></td>
+    </tr>
+    <tr>
+      <td>商业 SaaS（Proofpoint/KnowBe4/GoPhish 云版）</td>
+      <td>¥100-300/人/年</td>
+      <td>模板库丰富、自动难度递增、合规报表现成</td>
+      <td>员工行为数据出境到第三方；续费成本；定制弱</td>
+      <td>预算充足且人数多时再评估</td>
+    </tr>
+    <tr>
+      <td>自写脚本</td>
+      <td>0</td>
+      <td>完全可控</td>
+      <td>追踪打开/点击/提交的全链路埋点工作量巨大，不值得重造轮子</td>
+      <td>否</td>
+    </tr>
+  </table>
+
+  <h3>2.1 Gophish 部署要点（Docker）</h3>
+  <pre># 数据已有 Docker 环境（asset-monitor 同机或独立）
+docker run -d --name gophish \
+  -p 3333:3333 \    # 管理界面
+  -p 8080:80 \      # 落地页/追踪
+  -v /data/gophish:/opt/gophish \
+  gophish/gophish
+
+# 初始密码看容器日志：docker logs gophish | grep password
+# 首登后立即改密 + 管理界面加 IP 白名单（只允许IT网段）</pre>
+
+  <h3>2.2 发信基础设施（关键，决定进收件箱还是垃圾箱）</h3>
+  <ul class="plain">
+    <li><b>专用域名</b>：注册一个与公司域相近的演练域（如 <code>poppu1a-sec-test.com</code>——形近但明确是测试）。<b>绝不用公司正式域发钓鱼邮件</b>（会污染正式域信誉、误伤真实邮件）</li>
+    <li><b>DNS 三件套</b>：SPF（v=spf1 指向发信IP）、DKIM（2048 位密钥签名）、DMARC（p=none + rua 报告收件箱，先观察后收紧）</li>
+    <li><b>预热</b>：正式演练前 2 周开始小流量发信（每天几十封正常内容），养域名信誉，否则全进垃圾箱导致演练数据失真</li>
+    <li><b>落地页域名</b>：同样用演练域，配 Let's Encrypt 证书（Let's Encrypt 免费且被信任，真实攻击者也这么干——这正是演练要教的点）</li>
+  </ul>
+</div>
+
+<!-- ============ T3 ============ -->
+<div class="card" id="t3">
+  <h2>三、邮件模板库（基于 2026 真实威胁设计）</h2>
+  <p>模板设计原则：<b>每一套都对应一类真实在打的攻击</b>（数据来源：CrowdStrike GTR 2026 / DBIR 2026），并在复盘时告知员工"这不是编的，今年真有公司这么被打了"。</p>
+
+  <table>
+    <tr><th>模板</th><th>诱饵设计</th><th>对应真实威胁</th><th>难度</th><th>目标部门</th></tr>
+    <tr><td><b>T1 假验证码页面</b></td><td>"请完成人机验证以查看共享文档"→ 落地页模拟 CAPTCHA，实际收集凭据</td><td>CrowdStrike：假 CAPTCHA 诱饵 +563%，年度增长最快</td><td>低</td><td>全员</td></tr>
+    <tr><td><b>T2 密码过期通知</b></td><td>"您的邮箱密码将于24小时后过期"→ 仿 SSO 登录页</td><td>凭据钓鱼常青款（DBIR：凭据滥用居前列）</td><td>低</td><td>全员</td></tr>
+    <tr><td><b>T3 虚假发票/对账</b></td><td>"10月采购对账单见附件"→ 附件为 HTML 凭据页或宏文档</td><td>财务供应链诈骗（BEC）主力载体</td><td>中</td><td>财务/采购</td></tr>
+    <tr><td><b>T4 高管冒充转账</b></td><td>仿 CEO/总经办邮箱发"紧急付款，我先上会"（纯文本无链接，测的是流程敬畏而不是识别能力）</td><td>BEC——单笔损失最高的钓鱼类型（FBI IC3 年度损失数十亿美元级）</td><td>高</td><td>财务/高管助理</td></tr>
+    <tr><td><b>T5 IT 部门冒充</b></td><td>"安全团队检测到异常登录，请验证身份"（ irony：我们用假的"安全通知"教大家识别假安全通知）</td><td>语音钓鱼 vishing 的邮件版；利用对 IT 的天然信任</td><td>高</td><td>全员（第2轮+）</td></tr>
+  </table>
+
+  <h3>3.1 落地页与凭据处理（红线）</h3>
+  <div class="callout warn">
+    <b>安全红线：</b>落地页表单<b>不存密码</b>——前端收到提交事件即记录"该用户已提交凭据"，密码字段直接丢弃不发送。这是演练与真攻击的本质区别，也是对员工的承诺：演练不留任何人的密码。<b>落地页底部保留小字免责</b>："这是 poppula 安全团队组织的演练，您的密码未被记录"（提交后才显示，不打草惊蛇）。
+  </div>
+</div>
+
+<!-- ============ T4 ============ -->
+<div class="card" id="t4">
+  <h2>四、执行手册（每轮 SOP）</h2>
+  <table>
+    <tr><th style="width:60px;">#</th><th>步骤</th><th>操作细节</th><th>责任人</th></tr>
+    <tr><td>1</td><td>授权确认</td><td>邮件授权（IT负责人书面批准本轮时间/范围），抄送 IT 总监——防止演练当日被当成真实事件应急</td><td>安全</td></tr>
+    <tr><td>2</td><td>提前报备关键岗</td><td>告知服务台/网管"今日有演练"，收到问询统一话术："请仔细看发件人域名"</td><td>安全</td></tr>
+    <tr><td>3</td><td>投放</td><td>周二或周四 10:00 或 15:00（工作饱和时段，数据最真实）；Gophish 分批发送（避开网关速率限制）</td><td>安全</td></tr>
+    <tr><td>4</td><td>监控窗口</td><td>72 小时内跟踪打开/点击/提交曲线；发现异常恐慌（大量问询）可提前中止</td><td>安全</td></tr>
+    <tr><td>5</td><td>即时教育</td><td>点击者看到教育页（拆解刚才的诱饵+三个识别点）；提交者额外弹"你的密码本可以被盗——但这是演练"</td><td>平台自动</td></tr>
+    <tr><td>6</td><td>上报通道</td><td>邮件页显著位置放"一键上报"按钮（Outlook 报告插件/转发安全邮箱）；<b>上报的人无论点没点都计入正向分</b></td><td>全员</td></tr>
+    <tr><td>7</td><td>收尾通知</td><td>72 小时后全员发"演练结束"通报：本轮点击率、最逼真的一封、表扬上报员工（匿名/数量）</td><td>安全</td></tr>
+  </table>
+
+  <h3>4.1 难度递增路线（季度轮次）</h3>
+  <table>
+    <tr><th>轮次</th><th>模板</th><th>策略</th></tr>
+    <tr><td>Q1 首轮</td><td>T1 + T2（低难度明显破绽）</td><td>建基线；让"演练"概念全员知晓</td></tr>
+    <tr><td>Q2</td><td>T3 + 定向 T4</td><td>加入部门定向；引入"无链接纯社工"型</td></tr>
+    <tr><td>Q3</td><td>T5 + 混合（同一活动两封连环）</td><td>测"第一封建立信任+第二封收割"的链式攻击</td></tr>
+    <tr><td>Q4</td><td>自定义（针对本年度真实收到的攻击仿制）</td><td>用自家邮件网关拦下的真实样本做教材——最有说服力</td></tr>
+  </table>
+</div>
+
+<!-- ============ T5 ============ -->
+<div class="card" id="t5">
+  <h2>五、度量体系（KPI 定义先于执行）</h2>
+  <table>
+    <tr><th>指标</th><th>定义（分子/分母）</th><th>行业基准</th><th>我们的目标</th></tr>
+    <tr><td><b>打开率</b></td><td>触发追踪像素 / 发送数</td><td>30-40%</td><td>参考值（不做考核）</td></tr>
+    <tr><td><b>点击率</b></td><td>点击链接 / 发送数</td><td>首轮 ~30%，成熟 &lt;10%</td><td>年内 30%→10%</td></tr>
+    <tr><td><b>提交率</b></td><td>提交凭据 / 发送数</td><td>首轮 ~10%</td><td>&lt;3%</td></tr>
+    <tr><td><b>上报率</b></td><td>通过任意通道上报 / 发送数</td><td>成熟 &gt;50%</td><td>逐轮上升（<b>最优先指标</b>）</td></tr>
+    <tr><td><b>上报时延</b></td><td>首封上报时间 - 发送时间</td><td>小时级→分钟级</td><td>中位数 &lt;30 分钟</td></tr>
+    <tr><td><b>复发率</b></td><td>上轮点击本轮再点 / 上轮点击数</td><td>—</td><td>&lt;20%（教育有效性验证）</td></tr>
+  </table>
+  <div class="callout">
+    <b>上报率为什么最优先：</b>点击率有下限（再训练也会有人手滑），但上报率没有上限——<b>每多一个上报的员工，等于多了一个免费传感器</b>。对照攻击者 29 分钟的横向移动窗口：50 个员工的分钟级上报网络，比任何单点技术检测都覆盖面广。
+  </div>
+</div>
+
+<!-- ============ T6 ============ -->
+<div class="card" id="t6">
+  <h2>六、演练 × 邮件网关联动（每次演练都变成一次防御升级）</h2>
+  <p>演练的复盘产出直接回流到网关配置——这是"演练→防御"的闭环：</p>
+  <table>
+    <tr><th>演练发现</th><th>网关动作</th></tr>
+    <tr><td>某模板点击率异常高</td><td>提取模板特征（发件域/正文关键词/链接结构）→ 加为网关拦截规则</td></tr>
+    <tr><td>落地页被大量访问</td><td>URL 分类加入网关黑名单（防真实攻击者复用同类页面）</td></tr>
+    <tr><td>附件被下载</td><td>评估附件类型是否应默认隔离（对齐 CrowdStrike 建议：可执行附件零信任）</td></tr>
+    <tr><td>上报的内容</td><td>被上报样本自动进安全团队审查队列（演练期与真实期同一通道，练的就是这个肌肉）</td></tr>
+  </table>
+</div>
+
+<!-- ============ T7 ============ -->
+<div class="card" id="t7">
+  <h2>七、Splunk 集成（对齐现有 SOC）</h2>
+  <p>演练事件进 Splunk 统一分析——与现有安全日志同平台，真实攻击来临时演练数据就是行为基线：</p>
+  <pre># Gophish 侧：开启 webhook，事件推送到接收端
+# 接收端将事件转 syslog/HTTP Event Collector 到 Splunk：
+
+# HEC token 方式（推荐）
+curl -k https://splunk.poppula.com:8088/services/collector/event \
+  -H "Authorization: Splunk <hec-token>" \
+  -d '{"sourcetype":"gophish:campaign","event":{
+    "campaign":"2026Q1-T2-password-expiry",
+    "action":"clicked",           # sent/opened/clicked/submitted/reported
+    "email":"user@poppula.com",
+    "template":"T2",
+    "ts":"..."
+  }}'</pre>
+  <ul class="plain">
+    <li><b>sourcetype 规范</b>：<code>gophish:campaign</code>，字段 action/email/campaign/template——直接可做 CIM 映射（对齐我们 SOC 的标准化方向）</li>
+    <li><b>看板</b>：按部门/模板/动作的时间序列；与邮件网关真实拦截量叠加对比（演练命中率 vs 真实攻击拦截率的关联视图）</li>
+    <li><b>后续 LLM 研判挂钩</b>：演练事件流与真实上报共用一条管道——LLM 研判真实邮件时，可以引用"该用户历史演练行为"做加权（高复发用户的上报误判率更高，需要更仔细研判）</li>
+  </ul>
+</div>
+
+<!-- ============ T8 ============ -->
+<div class="card" id="t8">
+  <h2>八、风险控制与常见坑</h2>
+  <table>
+    <tr><th>风险</th><th>控制措施</th></tr>
+    <tr><td><b>演练被当成真实事件</b>引发业务恐慌</td><td>① 书面授权+关键岗提前报备 ② 发送时间避开月初月末财务高峰 ③ 中止预案（发出"停止演练"全员通知的预置模板）</td></tr>
+    <tr><td><b>员工信任受损</b>（"IT 钓我们"的抵触）</td><td>① 不与绩效挂钩、不点名（管理层版已声明）② 演练通报只讲统计不讲个人 ③ 教育页语气是"教你赢"不是"抓到你" ④ 明确承诺不存密码</td></tr>
+    <tr><td><b>演练邮件外泄</b>被截图发到外网/客户</td><td>模板落地页明确标注公司名与免责（查看源码可见但不显眼）；不做丑化公司或高管的诱饵内容</td></tr>
+    <tr><td><b>域名信誉反噬</b></td><td>演练域与正式域完全隔离；DMARC rua 监控；演练域 SPF 明确限定发信源</td></tr>
+    <tr><td><b>合规/隐私</b>（员工行为数据）</td><td>数据最小化（只记动作不存密码）；访问权限仅安全团队；保留期 12 个月后匿名化；演练前在 IT 制度中备案</td></tr>
+  </table>
+
+  <div class="callout">
+    <b>下一步（本周可启动）：</b><br>
+    ☐ 注册演练域名 + DNS 三件套配置<br>
+    ☐ Docker 部署 Gophish + 管理界面加固<br>
+    ☐ 制作首轮 T1/T2 模板，<b>先发给自己人（IT 部门）试测</b>——自己人都识别不了就别发全员<br>
+    ☐ Splunk HEC 通道打通（复用现有 SOC 接入方式）<br>
+    ☐ 向管理层提交授权申请（用配套管理层版汇报）
+  </div>
+
+  <div class="src-list">
+    <b>引用与工具：</b><br>
+    Gophish（开源）：<a href="https://getgophish.com">getgophish.com</a>　|
+    CrowdStrike GTR 2026（模板威胁依据）：<a href="https://www.crowdstrike.com/en-us/blog/crowdstrike-2026-global-threat-report-findings/">Findings 博客</a>　|
+    Verizon DBIR 2026 / Proofpoint State of the Phish（基准数据）　|
+    管理层汇报版：drills/phishing-drill-executives.html（本库）
+  </div>
+</div>
+
+<footer>
+  poppula IT Security · IT 内部执行方案 · 2026-08 · 内部参考<br>
+  演练执行后的数据报告模板另附 · 方案与《威胁报告全景手册》联动更新
+</footer>
+
+</div>
+</body>
+</html>
