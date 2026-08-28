@@ -8,15 +8,16 @@
 |------|------|
 | `threat-reports/` | 权威威胁报告的解读手册 |
 | `drills/` | 钓鱼演练/红蓝对抗汇报 |
-| `dashboards/` | 资产监控/漏洞态势页面（规划中） |
+| `dashboards/` | 规划蓝图/数据看板 |
 
 ## 收录文件
 
 | 文件 | 说明 | 更新时间 |
 |------|------|---------|
-| [threat-reports/threat-reports-handbook-2026.html](threat-reports/threat-reports-handbook-2026.html) | 全球安全威胁报告全景手册 2026：五大报告 2025→2026 对照解读 + 共识/分歧交叉分析 + 扩展清单 + 阅读体系 | 2026-08 |
-| [drills/phishing-drill-executives.html](drills/phishing-drill-executives.html) | 钓鱼演练·管理层汇报版：安全意识的地位（NIST/ISO/DBIR 依据）→ 为什么选钓鱼演练 → 演练全流程 → 投入建议 | 2026-08 |
-| [drills/phishing-drill-internal.html](drills/phishing-drill-internal.html) | 钓鱼演练·IT 落地方案：Gophish 选型部署、5 套模板库（对应 2026 真实威胁）、执行 SOP、KPI 度量体系、邮件网关联动、Splunk HEC 集成、风险控制 | 2026-08 |
+| [threat-reports/threat-reports-handbook-2026.html](threat-reports/threat-reports-handbook-2026.html) | 全球安全威胁报告全景手册 2026：五大报告对照解读+交叉视角+扩展清单 | 2026-08 |
+| [drills/phishing-drill-executives.html](drills/phishing-drill-executives.html) | 钓鱼演练·管理层汇报版 | 2026-08 |
+| [drills/phishing-drill-internal.html](drills/phishing-drill-internal.html) | 钓鱼演练·IT 落地方案 | 2026-08 |
+| [dashboards/ai-foundation-blueprint.html](dashboards/ai-foundation-blueprint.html) | 企业 AI Foundation 高层蓝图（Workshop 讨论稿）：六层架构+分阶段路线+治理度量 | 2026-08 |
 
 ## 约定
 
