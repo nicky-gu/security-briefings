@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业 AI Foundation 高层蓝图 · Workshop 讨论稿 · poppula IT</title>
+<style>
+  :root {
+    --brand: #d3fb12;
+    --dark: #0f0f0e;
+    --gray-bg: #f3f5f4;
+    --gray-border: #bebebe;
+    --text: #2a2a28;
+    --text-light: #6b6b68;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--gray-bg); color: var(--text); line-height: 1.8; }
+  .hero { background: var(--dark); padding: 60px 24px 46px; text-align: center; }
+  .hero .tag { display: inline-block; border: 1px solid var(--brand); color: var(--brand); font-size: 13px; letter-spacing: 4px; padding: 6px 18px; margin-bottom: 22px; }
+  .hero h1 { color: #fff; font-size: 32px; }
+  .hero h1 em { color: var(--brand); font-style: normal; }
+  .hero p.sub { color: #9a9a96; margin-top: 14px; font-size: 14.5px; }
+  .topnav { position: sticky; top: 0; z-index: 100; background: var(--dark); border-bottom: 2px solid var(--brand); overflow-x: auto; white-space: nowrap; padding: 0 12px; }
+  .topnav a { display: inline-block; color: #b8b8b4; text-decoration: none; font-size: 13px; padding: 11px 14px; }
+  .topnav a:hover { color: var(--brand); }
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+  .card { background: #fff; border: 1px solid var(--gray-border); border-radius: 6px; padding: 30px 32px; margin-bottom: 30px; }
+  .card h2 { font-size: 22px; margin-bottom: 16px; padding-left: 14px; border-left: 5px solid var(--brand); line-height: 1.4; }
+  .card h3 { font-size: 16.5px; margin: 22px 0 10px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+  th { background: var(--dark); color: var(--brand); padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e5e5e2; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .callout { background: var(--dark); color: #e8e8e4; padding: 20px 24px; border-radius: 6px; margin: 18px 0; border-left: 5px solid var(--brand); }
+  .callout b, .callout strong { color: var(--brand); }
+  .layer { background: #fff; border: 1px solid var(--gray-border); border-left: 6px solid var(--brand); border-radius: 6px; padding: 20px 24px; margin: 14px 0; }
+  .layer h3 { margin-top: 0; }
+  .layer .en { color: var(--text-light); font-size: 13px; letter-spacing: 1px; }
+  .hl { background: linear-gradient(transparent 62%, rgba(211,251,18,.55) 62%); font-weight: 600; }
+  ul.plain { padding-left: 20px; }
+  ul.plain li { margin: 8px 0; }
+  .src-list { font-size: 12.5px; color: var(--text-light); background: #f7f7f5; border-top: 1px dashed var(--gray-border); padding: 14px 16px; margin-top: 18px; border-radius: 0 0 6px 6px; }
+  .note { font-size: 13px; color: var(--text-light); }
+  footer { text-align: center; color: var(--text-light); font-size: 12px; padding: 30px 20px 50px; }
+  .chip { display: inline-block; background: rgba(211,251,18,.18); border: 1px solid var(--brand); color: #4a5a02; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin: 2px 4px 2px 0; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="tag">WORKSHOP DISCUSSION DRAFT · POPpULA</div>
+  <h1>企业 AI Foundation：<em>高层蓝图</em></h1>
+  <p class="sub">数字化部门讨论稿 · 六层参考架构 × 兼容性优先 × 依据权威报告交叉结论<br>
+  依据：NIST AI RMF / OWASP LLM & Agentic Top10 / Uber ADR 论文 / 13 份权威报告交叉分析（内部 knowledge-base）</p>
+</div>
+
+<nav class="topnav">
+  <a href="#f0">① 定位与原则</a>
+  <a href="#f1">② 六层架构</a>
+  <a href="#f2">③ 分阶段路线</a>
+  <a href="#f3">④ 治理与度量</a>
+  <a href="#f4">⑤ Workshop 讨论题</a>
+</nav>
+
+<div class="container">
+
+<!-- ============ F0 ============ -->
+<div class="card" id="f0">
+  <h2>一、定位与设计原则</h2>
+  <p><b>AI Foundation 是什么（本讨论稿的定义）：</b>企业自建的、支撑所有业务 AI 应用的<b>公共底座</b>——让每个业务团队做 AI 应用时不必重复造轮子，同时让安全、合规、成本在底座层统一管控。</p>
+
+  <div class="callout">
+    <b>Workshop 阶段的四条设计原则（决定所有后续选型）：</b><br>
+    <b>① 供应商中立</b>——底座不绑死任何一家模型厂商（OpenAI/Anthropic/国产），今天的热门模型 18 个月后可能被替换，接口层必须可插拔；<br>
+    <b>② 能力分层</b>——底座只提供"每个应用都需要"的能力（模型接入/知识/工具/审计），业务特性留给应用层；<br>
+    <b>③ 安全左移</b>——13 份权威报告的交叉共识：Agent 时代最大的风险（提示注入/过度授权/凭证泄露）<b>只能靠架构层缓解，无法事后修补</b>（ OWASP Agentic T6：数据与指令不可分是架构级问题）；<br>
+    <b>④ 小步快跑</b>——底座按能力分阶段交付，每阶段都有可用产出，不做"建成再用"的大瀑布。
+  </div>
+</div>
+
+<!-- ============ F1 ============ -->
+<div class="card" id="f1">
+  <h2>二、六层参考架构（High Level）</h2>
+  <p class="note">每层只回答"这一层放什么、为什么必须有"。产品选型在 workshop 后做。</p>
+
+  <div class="layer">
+    <h3>L1 · 模型接入层 <span class="en">MODEL GATEWAY</span></h3>
+    <p><b>放什么：</b>统一的 LLM 调用网关——所有应用通过它访问任何模型（商用 API / 开源自部署 / 本地小模型），统一鉴权、限流、计费、failover。</p>
+    <p><b>为什么第一层是这个：</b>供应商中立的物理保证。今天用 GPT 明天换国产，应用代码零改动。这是兼容性最强的一层，也是成本可视化的前提。</p>
+    <p><b>参考形态：</b>OpenAI 兼容协议已成为事实标准（包括国产模型基本都兼容）；开源网关（LiteLLM 类）或云厂商网关皆可。</p>
+  </div>
+
+  <div class="layer">
+    <h3>L2 · 知识与数据层 <span class="en">RAG & DATA</span></h3>
+    <p><b>放什么：</b>企业知识的统一入口——文档向量化、检索增强（RAG）管道、数据脱敏/分级。业务应用"提问"，这层负责"给对的知识"。</p>
+    <p><b>为什么：</b>杜绝每个应用各建一套知识库（重复建设+权限口径不一致）。数据分级在这里统一执行：什么数据可以进 prompt，什么必须脱敏。</p>
+    <p><b>关键约束：</b>权限模型必须与现有身份体系对齐——用户能检索到的内容 ≤ 其原有权限（防止 RAG 成为越权读取的后门）。</p>
+  </div>
+
+  <div class="layer">
+    <h3>L3 · 工具与代理层 <span class="en">AGENT & TOOLING</span></h3>
+    <p><b>放什么：</b>AI 调用企业系统的"手"——工具注册中心（MCP/Function Call 统一管理）、Agent 运行时、沙箱执行环境。</p>
+    <p><b>为什么：</b>这是权威报告警告最多的层。OWASP Agentic Top10 的核心结论：<b>过度授权（Excessive Agency）是唯一能在设计阶段完全消除的风险</b>，但现实中普遍违反（"先跑起来再说"文化）。工具中心化注册 = 每个工具的权限/审计/版本有统一台账。</p>
+    <p><b>关键约束：</b>第三方 MCP/工具必须经安全评审后入库（供应链风险：mcp.so 已收录 1.6 万+公开服务器，正复刻 npm 蛮荒期——JFrog 已发现波及全生态的组件漏洞 CVE-2025-6514）。</p>
+  </div>
+
+  <div class="layer">
+    <h3>L4 · 身份与权限层 <span class="en">IDENTITY</span></h3>
+    <p><b>放什么：</b>人和 Agent 的统一身份体系——Agent 的服务身份、凭证保管（Vault）、最小权限、人类审批关卡（human-in-the-loop）。</p>
+    <p><b>为什么：</b>三份独立报告同指一个事实：<b>现有身份体系为"人操作电脑"设计，Agent 是"软件操作软件"</b>（机器身份:人类身份已达 109:1——CyberArk 数据）。凭证泄露是 ADR 生产数据中<b>最先爆发的风险</b>（10 个月 26 类高危凭证外泄，且大多非恶意——员工顺手把密钥贴进 prompt）。</p>
+    <p><b>关键约束：</b>高危操作（付款/删除/外发）默认人类确认；Agent 凭证永不落盘、自动轮转。</p>
+  </div>
+
+  <div class="layer">
+    <h3>L5 · 可观测与审计层 <span class="en">OBSERVABILITY & AUDIT</span></h3>
+    <p><b>放什么：</b>全量行为日志（prompt/工具调用/数据访问/决策链）、审计检索、合规报告、异常检测。</p>
+    <p><b>为什么：</b>传统 SOC 看得见"动作"看不见"意图"（EDR 能看到文件写入，看不到 Agent 为什么写——Uber ADR 原文）。OWASP Agentic T8 将"不可追溯"单列为 Top 风险。OpenAI×HF 事件（2026-07）实证：700 个 Agent 的异常行为淹没在海量日志里一周无人发现——<b>日志必须配 AI 规模的分析能力</b>，这层与 SOC 的 LLM 研判方向天然融合。</p>
+    <p><b>关键约束：</b>日志记录"因果链"（prompt→推理→工具→结果），不只是 API 调用记录——否则事后无法取证。</p>
+  </div>
+
+  <div class="layer">
+    <h3>L6 · 治理与策略层 <span class="en">GOVERNANCE</span></h3>
+    <p><b>放什么：</b>AI 使用政策（能做什么/不能做什么）、模型准入标准（安全评估）、数据分类策略、红队测试机制、事件响应流程。</p>
+    <p><b>为什么：</b>NIST AI RMF 的四函数（治理/映射/测量/管理）中，治理排第一。IBM 2026 报告新增"影子 AI"为泄露主因——<b>没有官方供给，员工就会用私人 AI 处理公司数据</b>；治理不是限制使用，而是把需求导入受控通道。</p>
+    <p><b>关键约束：</b>政策要"可执行"（技术上能拦截），不是 PDF 文件。</p>
+  </div>
+
+  <div class="callout">
+    <b>六层的兼容性设计：</b>L1 保证模型可换、L2/L3 保证知识库和工具不绑应用、L4/L5 对接现有 IAM 和日志体系（不推倒重来）、L6 是制度层零技术依赖。<b>任何一层都可以先独立起步，后拼成整体。</b>
+  </div>
+</div>
+
+<!-- ============ F2 ============ -->
+<div class="card" id="f2">
+  <h2>三、分阶段路线（供讨论）</h2>
+  <table>
+    <tr><th>阶段</th><th>交付</th><th>解决什么痛点</th><th>依赖</th></tr>
+    <tr><td><b>Phase 1（0-3月）</b><br>受控试点</td><td>L1 网关（2-3 个模型接入）+ L6 最小政策（使用规范/数据分级）</td><td>影子 AI——给员工官方通道，用量和成本立即可见</td><td>几乎无依赖，最快见效</td></tr>
+    <tr><td><b>Phase 2（3-6月）</b><br>知识与工具</td><td>L2 RAG 管道（1-2 个高价值知识域）+ L3 工具注册中心（首批内部 API）</td><td>应用重复建设；RAG 权限统一</td><td>L1（流量统一走网关）</td></tr>
+    <tr><td><b>Phase 3（6-12月）</b><br>代理规模化</td><td>L4 身份层（Agent 服务身份+Vault）+ L5 审计（接入 Splunk/SOC）</td><td>Agent 上生产前的安全门槛</td><td>L3（有工具才谈权限）；对接现有 IAM</td></tr>
+    <tr><td><b>Phase 4（持续）</b><br>运营化</td><td>红队常态演练 / 模型评估流水线 / 度量看板</td><td>持续合规与风险跟踪</td><td>前三阶段全部就位</td></tr>
+  </table>
+  <p class="note">阶段划分的逻辑：先"给通道"（堵不如疏），再"给能力"（知识/工具），最后"给护栏"（身份/审计）——每阶段独立有价值，workshop 上可以按公司实际痛点重排优先级。</p>
+</div>
+
+<!-- ============ F3 ============ -->
+<div class="card" id="f3">
+  <h2>四、治理与度量（Workshop 必谈）</h2>
+  <table>
+    <tr><th>维度</th><th>建议度量</th><th>依据</th></tr>
+    <tr><td>采用度</td><td>官方通道 vs 影子 AI 的流量比；活跃应用数</td><td>IBM：影子 AI 是新泄露面——度量它才能治理它</td></tr>
+    <tr><td>成本</td><td>每应用/每部门的 token 成本与 ROI</td><td>L1 网关天然产出此数据</td></tr>
+    <tr><td>风险</td><td>高危工具调用拦截数；凭证异常使用告警数；红队发现数</td><td>OWASP Agentic T8（可追溯）；ADR（凭证最先爆）</td></tr>
+    <tr><td>质量</td><td>模型评估基准分；幻觉率抽检；用户满意度</td><td>NIST AI RMF "测量"函数</td></tr>
+  </table>
+
+  <div class="callout">
+    <b>与现有体系的融合点（不另起炉灶）：</b>身份 → 现有 IAM/AD；审计 → 现有 Splunk/SOC（LLM 研判方向已在规划）；数据分级 → 现有数据安全制度；事件响应 → 现有应急流程加"AI 事件"分支。Foundation 是放大器，不是替代品。
+  </div>
+</div>
+
+<!-- ============ F4 ============ -->
+<div class="card" id="f4">
+  <h2>五、留给 Workshop 的五个讨论题</h2>
+  <ul class="plain">
+    <li><b>① 首个场景选什么？</b>（客服/研发/知识问答/数据分析——建议选"数据不出公司+容错高"的场景打样）</li>
+    <li><b>② 模型策略：</b>纯国产 API / 混合（内部数据走国产+外部任务走国际）/ 自部署开源？——数据分级决定模型准入</li>
+    <li><b>③ 自建 vs 采购：</b>六层里哪几层必须自持（建议 L1/L4/L5 自持——它们是控制点），哪几层可采购（L2/L3 有成熟产品）</li>
+    <li><b>④ 组织归属：</b>Foundation 放数字化部门还是 IT 基础架构团队？安全团队在其中的角色（共建 L4/L5）</li>
+    <li><b>⑤ 投入产出怎么向管理层呈现：</b>建议用"影子 AI 治理 + 成本可视 + 安全合规"三重叙事（均有权威报告数据背书）</li>
+  </ul>
+
+  <div class="src-list">
+    <b>依据材料：</b><br>
+    内部：《13 份权威报告交叉分析》（knowledge-base/ai-agent-defense/01）——六条共识中五条直接构成本蓝图的 L3/L4/L5 设计依据；《全球安全威胁报告全景手册 2026》（security-briefings）——影子 AI/身份治理/自动化研判的行业数据<br>
+    外部：NIST AI RMF 1.0（治理四函数）；OWASP Top 10 for LLM Applications 2025 + Agentic AI Top 10（过度授权/供应链/不可追溯）；Uber ADR 论文 MLSys 2026（生产环境凭证泄露数据）；CyberArk（机器身份 109:1）；JFrog CVE-2025-6514（MCP 供应链实证）；IBM Cost of a Data Breach 2026（影子 AI）
+  </div>
+</div>
+
+<footer>
+  poppula IT · Workshop 讨论稿 · 2026-08 · High Level 版本（产品选型与详细设计后置）
+</footer>
+
+</div>
+</body>
+</html>
