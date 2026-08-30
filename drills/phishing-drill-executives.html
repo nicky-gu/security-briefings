@@ -36,6 +36,8 @@
   tr:nth-child(even) td { background: #fafafa; }
   .callout { background: var(--dark); color: #e8e8e4; padding: 20px 24px; border-radius: 6px; margin: 18px 0; border-left: 5px solid var(--brand); }
   .callout b, .callout strong { color: var(--brand); }
+  .callout.warn { background: #fff8f8; border-left-color: var(--red); color: var(--text); }
+  .callout.warn b, .callout.warn strong { color: var(--red); }
   .hl { background: linear-gradient(transparent 62%, rgba(211,251,18,.55) 62%); font-weight: 600; }
   .bignum { font-size: 42px; font-weight: 800; color: var(--dark); line-height: 1.1; }
   .bignum small { font-size: 15px; font-weight: 500; color: var(--text-light); }
@@ -120,12 +122,14 @@
 
   <div class="callout">
     <b>三个权威依据：</b><br>
-    ① <b>NIST CSF 2.0</b>（2024）将"安全意识与培训"（PR.AT）列为治理（GV）与防护（PR）之间的核心控制职能；<br>
+    ① <b>NIST CSF 2.0</b>（2024）在<b>防护（PR）</b>函数下设立 PR.AT「意识与培训」类别，是六大函数（GV / ID / PR / DE / RS / RC）的核心控制措施之一；2.0 版新增的<b>治理（GV）</b>函数（GV.RR）进一步要求管理层对安全风险管理负责，为意识培训提供了治理层的责任归属；<br>
     ② <b>ISO/IEC 27001:2022</b> Annex A.6.3 明确要求"通过教育、培训提升人员安全意识"，且是可认证条款；<br>
     ③ <b>Verizon DBIR</b> 连续多年结论：人为元素始终是泄露的最大单一贡献因素——技术投入无法替代。
   </div>
 
-  <p><b>但"意识"无法靠宣讲获得。</b>Proofpoint 的报告指出：能够正确识别钓鱼邮件的员工比例，与"是否经历过模拟演练"强相关——听讲座的记住 20%，<b>被"钓"过一次的记住 80%</b>。这就是"演练"的理论基础：体验式记忆 &gt; 被动听讲。</p>
+  <p><b>但"意识"无法靠宣讲获得。</b>安全行业的共识与实测数据一致指向同一结论：<b>体验式学习的效果显著优于被动听讲</b>——员工必须在受控环境里真实经历一次攻击，才能形成可迁移的识别能力。（行业文献常引用「学习金字塔」的百分比来佐证这一点，但该组数字源自 1960 年代一份未发表的研究、缺乏实证支撑，本报告<b>不予采用</b>，以免在质询环节被推翻而连带影响其他数据的可信度。）</p>
+
+  <p>更硬的证据是<b>可复现的纵向数据</b>：持续开展模拟演练的组织，钓鱼点击率会从首轮约 30% 逐步降至 10% 以下（见 5.2 行业基准表），且该下降可归因于演练本身——这是单次讲座无法带来的效果。</p>
 </div>
 
 <!-- ============ E3 ============ -->
@@ -178,7 +182,22 @@
   </table>
 
   <div class="callout">
-    <b>原则声明（对管理层重要）：</b>演练成绩<b>不与个人绩效挂钩</b>、不点名通报。这是国际最佳实践（SANS/Proofpoint 一致建议）——挂钩会导致员工隐瞒真实行为，演练就失去了度量意义。我们度量的是<b>组织的安全水位</b>，不是个人的错。
+    <b>原则声明（对管理层重要）：</b>演练成绩<b>不与个人绩效挂钩</b>、不点名通报。这是国际最佳实践（SANS/Proofpoint 一致建议）——挂钩会导致员工隐瞒真实行为，演练就失去了度量意义。我们度量的是<b>组织的安全水位</b>，不是个人的错。<br><br>
+    <b>同时建议配套正向激励：</b>对主动上报的员工给予认可（公开表扬 / 小额奖励），<b>点过链接但及时上报的同样计入正向分</b>。把员工从「被考核对象」转变为「防御网络的一部分」，是上报率能否从 &lt;20% 提升到 &gt;50% 的关键变量——仅靠「不惩罚」不足以驱动主动行为，需要管理层为这笔小额激励预算背书。
+  </div>
+
+  <h3>4.1 员工数据处理的合规边界（《个人信息保护法》视角）</h3>
+  <p style="font-size:14px;color:#444;">演练必然产生员工个人信息（谁打开了、谁点击了、谁提交了、谁上报了），属于《个人信息保护法》所规范的个人信息处理行为。需在启动前完成合规备案，避免被质疑为「用钓鱼邮件监视员工」。四项底线：</p>
+  <table>
+    <tr><th style="width:130px;">维度</th><th>我们的做法</th></tr>
+    <tr><td><b>处理依据</b></td><td>通过劳动规章制度 / 员工手册事先告知演练机制，或归入「为履行法定安全保护义务所必需」；<b>不依赖默示同意</b>。正式启动前须完成制度备案并留痕</td></tr>
+    <tr><td><b>数据最小化</b></td><td>落地页<b>不记录、不存储任何密码</b>，仅记录「提交」这一动作；不采集与演练目的无关的任何信息</td></tr>
+    <tr><td><b>访问权限</b></td><td>原始数据仅安全团队可见；<b>同步至 SIEM（Splunk）的数据必须存放于独立索引并配置角色级访问控制</b>；禁止对外共享或披露到个人维度</td></tr>
+    <tr><td><b>保存期限</b></td><td>保留 12 个月后匿名化；<b>SIEM 侧索引的保留策略须与之一致</b>，避免两系统保留期不一致导致承诺落空</td></tr>
+  </table>
+
+  <div class="callout warn">
+    <b>为什么这一节必须由管理层知晓：</b>「不与绩效挂钩」是一项内部承诺，但<b>它能否兑现取决于技术上的访问控制</b>。如果 HR 或业务部门能够在 SIEM 中检索到某位员工的个人点击记录，该承诺即告失效，同时构成个人信息违规。技术侧的具体实现要求见 IT 内部版第七章。
   </div>
 </div>
 
@@ -189,21 +208,27 @@
   <h3>5.1 本轮演练要向管理层要的三件事</h3>
   <ul class="plain">
     <li><b>认可机制</b>：演练常态化（每季度一轮），纳入年度安全计划——单次演练是活动，持续演练才是水位线</li>
-    <li><b>小预算</b>：主要用于演练平台/工具订阅与培训素材，对比 IBM $4.99M 的单次泄露成本，投入产出比不需要论证</li>
-    <li><b>高层示范</b>：管理层本身是"CEO 冒充"类钓鱼的头号目标（BEC 商务邮件欺诈），也建议纳入演练范围并带头参与</li>
+    <li><b>小预算（给出量级）</b>：开源自建方案（Gophish）工具费为 0，主要成本是演练域名与人力投入，量级在<b>万元 / 年以内</b>；若选用商业 SaaS 平台，约 <b>¥100–300 / 人 / 年</b>（按全员规模计）。两种口径与 IBM $4.99M 的单次泄露成本都不在同一数量级</li>
+    <li><b>高层示范</b>：管理层本身是「CEO 冒充」类钓鱼的头号目标（BEC 商务邮件欺诈），建议纳入演练范围并带头参与；<b>其中「高管冒充」模板须经 CEO 本人书面知情</b>后方可投放</li>
   </ul>
 
   <h3>5.2 预期效果（行业基准）</h3>
   <table>
-    <tr><th>指标</th><th>行业首轮均值</th><th>持续 4 轮后</th><th>说明</th></tr>
+    <tr><th>指标</th><th>行业首轮均值</th><th>持续 4 轮后<br>（约 12 个月）</th><th>说明</th></tr>
     <tr><td>钓鱼点击率</td><td>~30%（各报告区间 18-33%）</td><td><b>&lt;10%</b></td><td>Proofpoint/SANS 数据：持续演练是最有效降因</td></tr>
-    <tr><td>主动上报率</td><td>首轮往往 &lt;20%</td><td><b>&gt;50%</b></td><td>上报是比"不点击"更有价值的指标——员工变成传感器</td></tr>
-    <tr><td>首次响应时间</td><td>小时级</td><td><b>分钟级</b></td><td>对照攻击者 29 分钟的横向移动窗口（CrowdStrike），这个指标的军备竞赛意义明确</td></tr>
+    <tr><td>主动上报率</td><td>首轮往往 &lt;20%</td><td><b>&gt;50%</b></td><td>上报是比「不点击」更有价值的指标——员工变成传感器</td></tr>
+    <tr><td>首次响应时间</td><td>小时级</td><td><b>分钟级</b></td><td>对照攻击者从入侵到横向移动的<b>突破时间（breakout time）</b>：CrowdStrike GTR 记录的平均值为 29 分钟，<b>最快记录已缩短至 2 分 7 秒</b>——只有分钟级上报才谈得上拦截</td></tr>
   </table>
+
+  <div class="callout warn">
+    <b>需提前对齐的一点：如果首轮数据很难看</b><br>
+    这是最需要在启动前就与管理层达成共识的事项。<b>首轮点击率高于 30% 完全正常</b>——正因为它高，才说明演练是必要的；反过来，如果首轮数据异常漂亮，反而应当怀疑数据有效性（例如大量邮件被判为垃圾邮件、员工根本没看到）。<br><br>
+    因此请在启动前就确认一个前提：<b>首轮的作用是建立真实基线，不是验收</b>。真正需要验收的是第 3–4 轮的下降趋势。若因首轮数据难看而中止项目，等于消灭了目前唯一能够证明「人的风险真实存在」的度量手段。
+  </div>
 
   <div class="callout">
     <b>最后的翻译（给决策者）：</b><br>
-    安全预算的单位不是"元"，是"一次泄露"。点击率从 30% 降到 10%，意味着相同攻击量下，我们被攻破的概率直接砍掉三分之二——这相当于给全公司加了一层<b>所有终端设备都免费自带、且持续升级的防线</b>。这是安全体系里单价最低、复利最高的一项投入。
+    安全预算的单位不是「元」，是「一次泄露」。点击率从 30% 降到 10%，意味着相同攻击量下，我们被攻破的概率直接砍掉三分之二——这相当于给全公司加了一层<b>所有终端设备都免费自带、且持续升级的防线</b>。这是安全体系里单价最低、复利最高的一项投入。
   </div>
 
   <div class="src-list">
@@ -212,7 +237,7 @@
     IBM Cost of a Data Breach 2026：<a href="https://www.ibm.com/reports/data-breach">ibm.com/reports/data-breach</a>　|
     CrowdStrike GTR 2026：<a href="https://www.crowdstrike.com/en-us/global-threat-report/">crowdstrike.com/en-us/global-threat-report/</a>　|
     Mandiant M-Trends：<a href="https://cloud.google.com/security/resources/m-trends">cloud.google.com/security/resources/m-trends</a>　|
-    Proofpoint State of the Phish：proofpoint.com（官网白皮书区）　|
+    Proofpoint State of the Phish：<a href="https://www.proofpoint.com/us/resources/threat-reports/state-of-phish">proofpoint.com/us/resources/threat-reports/state-of-phish</a>　|
     NIST CSF 2.0：<a href="https://www.nist.gov/cyberframework">nist.gov/cyberframework</a>　|
     详细对照解读见：《全球安全威胁报告全景手册 2026》（内部简报库 threat-reports/ 目录）
   </div>
