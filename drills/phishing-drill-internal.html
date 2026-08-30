@@ -82,7 +82,7 @@
   <table>
     <tr><th style="width:140px;">项</th><th>内容</th></tr>
     <tr><td><b>目标</b></td><td>建立可持续的钓鱼演练能力：季度一轮、全员工覆盖、点击率年目标 30%→10% 以下、上报率 &gt;50%</td></tr>
-    <tr><td><b>范围</b></td><td>全员邮箱（首轮）；后续轮次加码高风险部门（财务/采购/HR/高管）</td></tr>
+    <tr><td><b>范围</b></td><td>全员邮箱（首轮）；后续轮次加码高风险部门（财务/采购/HR/高管）。<b>须先固化纳入/排除清单</b>：外包与供应商账号、实习生、长期休假人员、离职未回收账号是否计入——口径不清会导致分母漂移，跨轮次数据不可比。建议以 HR 在册正式员工名单为准，并在每轮方案中固化该名单快照</td></tr>
     <tr><td><b>技术栈</b></td><td>演练平台（Gophish）+ 域名/发信基础设施 + 教育落地页 + Splunk 记账 + 企微通知</td></tr>
     <tr><td><b>红线</b></td><td>不收集真实密码（落地页只记录"提交"动作）；不与绩效挂钩；数据仅安全团队可见</td></tr>
   </table>
@@ -125,20 +125,38 @@
   </table>
 
   <h3>2.1 Gophish 部署要点（Docker）</h3>
-  <pre># 数据已有 Docker 环境（asset-monitor 同机或独立）
+  <pre># 前置：Docker 环境已具备（asset-monitor 同机或独立）
+
+# ① 用 named volume —— 不要用 bind mount 挂 /opt/gophish
+#    /opt/gophish 是程序目录（gophish 二进制 + config.json + gophish.db 都在其中）
+#    bind mount 一个空宿主机目录过去会整体遮蔽容器内文件，容器直接起不来
+docker volume create gophish_data
+
 docker run -d --name gophish \
-  -p 3333:3333 \    # 管理界面
-  -p 8080:80 \      # 落地页/追踪
-  -v /data/gophish:/opt/gophish \
+  --restart unless-stopped \
+  -p 127.0.0.1:3333:3333 \   # 管理界面：仅本机监听，见下方说明
+  -p 443:443 \               # 落地页/追踪：必须 443，见下方说明
+  -v gophish_data:/opt/gophish \
   gophish/gophish
 
-# 初始密码看容器日志：docker logs gophish | grep password
-# 首登后立即改密 + 管理界面加 IP 白名单（只允许IT网段）</pre>
+# 初始密码：docker logs gophish 2>&amp;1 | grep -i password
+# 首登后立即改密 + 管理界面加 IP 白名单（只允许 IT 网段）
+# 定期备份卷内 gophish.db（演练历史数据是合规留痕证据）：
+#   docker run --rm -v gophish_data:/src -v $PWD:/backup alpine \
+#     tar czf /backup/gophish-db-$(date +%F).tar.gz -C /src gophish.db</pre>
+
+  <div class="callout warn">
+    <b>两个会直接导致演练失败的坑（务必照改）：</b><br><br>
+    <b>① 落地页端口必须是 443，不能用 8080。</b>映射到 8080 时落地页 URL 形如 <code>http://演练域:8080/…</code>——<b>非标准端口会明显拉低仿真度</b>（员工看到端口就起疑，邮件网关也更易判定为危险），结果是演练数据偏乐观、失去参考价值。<br>
+    正确做法：容器映射 <code>-p 443:443</code>，并在 <code>config.json</code> 中将 <code>phish_server.listen_url</code> 设为 <code>0.0.0.0:443</code>、<code>use_tls</code> 设为 <code>true</code>，配 Let's Encrypt 证书（与 2.2 保持一致）。<br><br>
+    <b>② 管理界面建议只监听 127.0.0.1。</b>Gophish 管理端默认走 HTTP，管理员密码与全员行为数据明文传输；若整段暴露在办公网，等同于把演练数据开在明网上。生产做法：仅本机监听，通过 SSH 隧道或带 HTTPS 的反向代理访问。
+  </div>
 
   <h3>2.2 发信基础设施（关键，决定进收件箱还是垃圾箱）</h3>
   <ul class="plain">
-    <li><b>专用域名</b>：注册一个与公司域相近的演练域（如 <code>poppu1a-sec-test.com</code>——形近但明确是测试）。<b>绝不用公司正式域发钓鱼邮件</b>（会污染正式域信誉、误伤真实邮件）</li>
-    <li><b>DNS 三件套</b>：SPF（v=spf1 指向发信IP）、DKIM（2048 位密钥签名）、DMARC（p=none + rua 报告收件箱，先观察后收紧）</li>
+    <li><b>专用域名</b>：注册一个<b>语义明确、但不含品牌形近字</b>的演练域（建议 <code>poppula-security-drill.com</code> 这类，名称中带 drill / test 字样）。<b>绝不用公司正式域发钓鱼邮件</b>（会污染正式域信誉、误伤真实邮件）。<br>
+      <span style="color:var(--red);"><b>不建议采用形近替换域名</b>（如用数字 1 替换字母 l 的 <code>poppu1a-…</code>）：① 警觉员工一眼识破，演练数据反而偏乐观；② 从公司外部看这属于针对自家品牌的 typosquatting，可能被品牌保护系统或外部观察者误报为恶意域名，徒增解释成本。</span></li>
+    <li><b>DNS 三件套</b>：SPF（<code>v=spf1</code> 指向发信 IP）、DKIM（2048 位密钥签名）、DMARC（<code>p=none</code> + <code>rua</code> 报告收件箱）。<b>演练域的 <code>p=none</code> 是终态而非过渡态</b>——演练邮件本就要求能送达，此处配 DMARC 的目的是<b>通过 rua 报告监控域名信誉</b>，不需要、也不应后续收紧到 quarantine / reject</li>
     <li><b>预热</b>：正式演练前 2 周开始小流量发信（每天几十封正常内容），养域名信誉，否则全进垃圾箱导致演练数据失真</li>
     <li><b>落地页域名</b>：同样用演练域，配 Let's Encrypt 证书（Let's Encrypt 免费且被信任，真实攻击者也这么干——这正是演练要教的点）</li>
   </ul>
@@ -154,7 +172,7 @@ docker run -d --name gophish \
     <tr><td><b>T1 假验证码页面</b></td><td>"请完成人机验证以查看共享文档"→ 落地页模拟 CAPTCHA，实际收集凭据</td><td>CrowdStrike：假 CAPTCHA 诱饵 +563%，年度增长最快</td><td>低</td><td>全员</td></tr>
     <tr><td><b>T2 密码过期通知</b></td><td>"您的邮箱密码将于24小时后过期"→ 仿 SSO 登录页</td><td>凭据钓鱼常青款（DBIR：凭据滥用居前列）</td><td>低</td><td>全员</td></tr>
     <tr><td><b>T3 虚假发票/对账</b></td><td>"10月采购对账单见附件"→ 附件为 HTML 凭据页或宏文档</td><td>财务供应链诈骗（BEC）主力载体</td><td>中</td><td>财务/采购</td></tr>
-    <tr><td><b>T4 高管冒充转账</b></td><td>仿 CEO/总经办邮箱发"紧急付款，我先上会"（纯文本无链接，测的是流程敬畏而不是识别能力）</td><td>BEC——单笔损失最高的钓鱼类型（FBI IC3 年度损失数十亿美元级）</td><td>高</td><td>财务/高管助理</td></tr>
+    <tr><td><b>T4 高管冒充转账</b><br><span style="color:var(--red);font-size:12px;">须 CEO 本人书面知情</span></td><td>仿 CEO/总经办邮箱发"紧急付款，我先上会"（纯文本无链接，测的是流程敬畏而不是识别能力）。<b>因冒用高管名义，IT 负责人授权不足以覆盖其关系与流程风险，须额外取得 CEO 本人书面知情并提前与 CEO 办公室通气</b></td><td>BEC——单笔损失最高的钓鱼类型（FBI IC3 年度损失数十亿美元级）</td><td>高</td><td>财务/高管助理</td></tr>
     <tr><td><b>T5 IT 部门冒充</b></td><td>"安全团队检测到异常登录，请验证身份"（ irony：我们用假的"安全通知"教大家识别假安全通知）</td><td>语音钓鱼 vishing 的邮件版；利用对 IT 的天然信任</td><td>高</td><td>全员（第2轮+）</td></tr>
   </table>
 
@@ -169,7 +187,7 @@ docker run -d --name gophish \
   <h2>四、执行手册（每轮 SOP）</h2>
   <table>
     <tr><th style="width:60px;">#</th><th>步骤</th><th>操作细节</th><th>责任人</th></tr>
-    <tr><td>1</td><td>授权确认</td><td>邮件授权（IT负责人书面批准本轮时间/范围），抄送 IT 总监——防止演练当日被当成真实事件应急</td><td>安全</td></tr>
+    <tr><td>1</td><td>授权确认</td><td>邮件授权（IT负责人书面批准本轮时间/范围），抄送 IT 总监——防止演练当日被当成真实事件应急。<b>本轮若含 T4 模板，须附 CEO 本人书面知情</b>；同时确认 IT 制度备案已完成（个人信息处理依据，见第八章）</td><td>安全</td></tr>
     <tr><td>2</td><td>提前报备关键岗</td><td>告知服务台/网管"今日有演练"，收到问询统一话术："请仔细看发件人域名"</td><td>安全</td></tr>
     <tr><td>3</td><td>投放</td><td>周二或周四 10:00 或 15:00（工作饱和时段，数据最真实）；Gophish 分批发送（避开网关速率限制）</td><td>安全</td></tr>
     <tr><td>4</td><td>监控窗口</td><td>72 小时内跟踪打开/点击/提交曲线；发现异常恐慌（大量问询）可提前中止</td><td>安全</td></tr>
@@ -193,15 +211,24 @@ docker run -d --name gophish \
   <h2>五、度量体系（KPI 定义先于执行）</h2>
   <table>
     <tr><th>指标</th><th>定义（分子/分母）</th><th>行业基准</th><th>我们的目标</th></tr>
+    <tr><td><b>进箱率</b><br><span style="font-size:12px;color:#d92b2b;">新增 · 数据质量前置指标</span></td><td>成功进入收件箱 / 发送数（投放前用 Gmail / Outlook / 企业邮箱种子账号实测）</td><td>—</td><td><b>&gt;90%</b>；低于 80% 本轮数据作废、重投</td></tr>
     <tr><td><b>打开率</b></td><td>触发追踪像素 / 发送数</td><td>30-40%</td><td>参考值（不做考核）</td></tr>
-    <tr><td><b>点击率</b></td><td>点击链接 / 发送数</td><td>首轮 ~30%，成熟 &lt;10%</td><td>年内 30%→10%</td></tr>
-    <tr><td><b>提交率</b></td><td>提交凭据 / 发送数</td><td>首轮 ~10%</td><td>&lt;3%</td></tr>
-    <tr><td><b>上报率</b></td><td>通过任意通道上报 / 发送数</td><td>成熟 &gt;50%</td><td>逐轮上升（<b>最优先指标</b>）</td></tr>
+    <tr><td><b>点击率</b></td><td>点击链接 / <b>打开数</b>（CTOR）</td><td>首轮 ~30%，成熟 &lt;10%</td><td>年内 30%→10%</td></tr>
+    <tr><td><b>提交率</b></td><td>提交凭据 / <b>打开数</b></td><td>首轮 ~10%</td><td>&lt;3%</td></tr>
+    <tr><td><b>上报率</b></td><td>通过任意通道上报 / <b>打开数</b></td><td>成熟 &gt;50%</td><td>逐轮上升（<b>最优先指标</b>）</td></tr>
     <tr><td><b>上报时延</b></td><td>首封上报时间 - 发送时间</td><td>小时级→分钟级</td><td>中位数 &lt;30 分钟</td></tr>
     <tr><td><b>复发率</b></td><td>上轮点击本轮再点 / 上轮点击数</td><td>—</td><td>&lt;20%（教育有效性验证）</td></tr>
   </table>
+
+  <div class="callout warn">
+    <b>口径修正：分母为什么从「发送数」改为「打开数」</b><br>
+    本方案 2.2 已强调「邮件全进垃圾箱会导致演练数据失真」——既然如此，用<b>发送数</b>作分母就会把「根本没看到邮件」的人算成「看到了但没点」，<b>系统性低估真实风险</b>。<br><br>
+    更麻烦的是跨轮次对比会失真：这一轮进箱率高、下一轮低，点击率的波动可能只反映投递质量，而与员工意识无关。<br><br>
+    <b>做法</b>：主指标统一采用 <b>CTOR（以打开数为分母）</b>，并把<b>进箱率单列为数据质量前置指标</b>——进箱率不达标时，本轮所有行为指标不予采信。若历史上已按发送数口径出过报告，复盘时需显式标注口径变更点，避免趋势线断裂被误读。
+  </div>
+
   <div class="callout">
-    <b>上报率为什么最优先：</b>点击率有下限（再训练也会有人手滑），但上报率没有上限——<b>每多一个上报的员工，等于多了一个免费传感器</b>。对照攻击者 29 分钟的横向移动窗口：50 个员工的分钟级上报网络，比任何单点技术检测都覆盖面广。
+    <b>上报率为什么最优先：</b>点击率有下限（再训练也会有人手滑），但上报率没有上限——<b>每多一个上报的员工，等于多了一个免费传感器</b>。对照攻击者从入侵到横向移动的<b>突破时间（breakout time）</b>：CrowdStrike GTR 记录的平均值为 29 分钟、<b>最快记录已缩短至 2 分 7 秒</b>——在这个尺度上，只有分钟级的上报网络（数十名员工构成的覆盖面）才谈得上抢在横向移动之前拦截，单点技术检测做不到这个覆盖密度。
   </div>
 </div>
 
@@ -223,22 +250,32 @@ docker run -d --name gophish \
   <h2>七、Splunk 集成（对齐现有 SOC）</h2>
   <p>演练事件进 Splunk 统一分析——与现有安全日志同平台，真实攻击来临时演练数据就是行为基线：</p>
   <pre># Gophish 侧：开启 webhook，事件推送到接收端
-# 接收端将事件转 syslog/HTTP Event Collector 到 Splunk：
+# 接收端将事件转 syslog / HEC 到 Splunk：
 
-# HEC token 方式（推荐）
-curl -k https://splunk.poppula.com:8088/services/collector/event \
-  -H "Authorization: Splunk <hec-token>" \
-  -d '{"sourcetype":"gophish:campaign","event":{
-    "campaign":"2026Q1-T2-password-expiry",
-    "action":"clicked",           # sent/opened/clicked/submitted/reported
-    "email":"user@poppula.com",
-    "template":"T2",
-    "ts":"..."
-  }}'</pre>
+# HEC 方式（推荐）
+# 注意：不要加 -k（跳过证书校验）。Splunk 应配置可信证书，
+#       否则等于把全员演练行为数据送进一条可被中间人接管的通道
+curl https://splunk.poppula.com:8088/services/collector/event \
+  -H "Authorization: Splunk &lt;HEC_TOKEN&gt;" \
+  -d '{
+    "index":"phish_drill",
+    "sourcetype":"gophish:campaign",
+    "event":{
+      "campaign":"2026Q1-T2-password-expiry",
+      "action":"clicked",          # sent/opened/clicked/submitted/reported
+      "user_hash":"a3f1c9…",       # 邮箱 SHA-256，见下方「身份字段脱敏」
+      "dept":"finance",
+      "template":"T2",
+      "ts":"2026-09-15T10:04:31+08:00"
+    }
+  }'</pre>
   <ul class="plain">
-    <li><b>sourcetype 规范</b>：<code>gophish:campaign</code>，字段 action/email/campaign/template——直接可做 CIM 映射（对齐我们 SOC 的标准化方向）</li>
-    <li><b>看板</b>：按部门/模板/动作的时间序列；与邮件网关真实拦截量叠加对比（演练命中率 vs 真实攻击拦截率的关联视图）</li>
-    <li><b>后续 LLM 研判挂钩</b>：演练事件流与真实上报共用一条管道——LLM 研判真实邮件时，可以引用"该用户历史演练行为"做加权（高复发用户的上报误判率更高，需要更仔细研判）</li>
+    <li><b style="color:#d92b2b;">独立 index + 角色级访问控制（必做）</b>：演练数据写入<b>独立索引 <code>index=phish_drill</code></b>，并配置角色级 ACL，仅安全团队可检索。Splunk 的可见范围远大于 Gophish——<b>若放任在公共索引里，业务部门或 HR 就能搜到「某位员工点击了链接」，这将直接击穿管理层版承诺的「不与绩效挂钩」，同时构成个人信息违规</b>。此项未落实前，不要向 Splunk 发送任何演练数据</li>
+    <li><b>保留期对齐</b>：<code>indexes.conf</code> 中该索引的 <code>frozenTimePeriodInSecs</code> 须与「12 个月后匿名化」保持一致，避免出现 Gophish 侧已匿名化、Splunk 侧仍留存完整记录的情况</li>
+    <li><b>身份字段脱敏</b>：事件体中的邮箱建议以<b>哈希值</b>（<code>user_hash</code>）入湖，个人明细仅保留在 Gophish 本地用于定向复训；看板按 <code>dept</code> / <code>template</code> 维度聚合即可，无需个人身份字段</li>
+    <li><b>sourcetype 规范</b>：<code>gophish:campaign</code>，字段 action / campaign / template / dept / user_hash——可直接做 CIM 映射（对齐 SOC 标准化方向）</li>
+    <li><b>看板</b>：按部门 / 模板 / 动作的时间序列；与邮件网关真实拦截量叠加对比（演练命中率 vs 真实攻击拦截率的关联视图）</li>
+    <li><b>LLM 研判挂钩</b>：演练事件流与真实上报共用一条管道——LLM 研判真实邮件时可引用「该用户历史演练行为」做加权（高复发用户的上报误判率更高，需更仔细研判）。<b>注意：该用途依赖个人维度数据，须严格限定在安全团队角色内，且不得输出至任何对员工可见的界面或报表</b></li>
   </ul>
 </div>
 
@@ -255,13 +292,15 @@ curl -k https://splunk.poppula.com:8088/services/collector/event \
   </table>
 
   <div class="callout">
-    <b>下一步（本周可启动）：</b><br>
-    ☐ 注册演练域名 + DNS 三件套配置<br>
-    ☐ Docker 部署 Gophish + 管理界面加固<br>
-    ☐ 制作首轮 T1/T2 模板，<b>先发给自己人（IT 部门）试测</b>——自己人都识别不了就别发全员<br>
-    ☐ Splunk HEC 通道打通（复用现有 SOC 接入方式）<br>
-    ☐ 向管理层提交授权申请（用配套管理层版汇报）
+    <b>下一步（按序执行，授权在前）：</b><br>
+    <b>第 0 步 · 先做</b>　☐ 向管理层提交授权申请（用配套管理层版汇报）并同步完成 IT 制度备案（个人信息处理依据）<br>
+    <b>第 1 步</b>　☐ 注册演练域名 + DNS 三件套配置（SPF / DKIM / DMARC）　<span style="font-size:12px;">域名注册与 DNS 生效耗时较长，可与审批并行推进</span><br>
+    <b>第 2 步</b>　☐ Docker 部署 Gophish + 管理界面加固（443 落地页、named volume、改密、仅本机监听）<br>
+    <b>第 3 步</b>　☐ Splunk 独立 index + 角色 ACL 打通（<b>务必先配好访问控制，再灌数据</b>）<br>
+    <b>第 4 步</b>　☐ 制作首轮 T1/T2 模板，<b>先发给自己人（IT 部门）试测</b>——自己人都识别不了就别发全员<br>
+    <b>第 5 步</b>　☐ 种子邮箱验证进箱率（&gt;90% 方可正式投放）
   </div>
+  <p style="font-size:13.5px;margin-top:12px;color:#d92b2b;"><b>为什么把授权提到第 0 步：</b>原清单把「申请授权」放在最后，但时间线第 1-2 周就要开始搭建基础设施——若授权未获批准，前期投入即作废。因此授权与制度备案应前置；仅域名注册这类长耗时事项可与审批并行。</p>
 
   <div class="src-list">
     <b>引用与工具：</b><br>
